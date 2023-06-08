@@ -75,7 +75,7 @@ exports.updateWalletBalance = async function(req,res){
 
         let amount = 0;
 
-        let WalletBalance = await Wallet.findOne({userId:req.query.userId});
+        let WalletBalance = await Wallet.findOneAndUpdate({userId:req.query.userId},{consistent:true});
 
         if(req.query.amountFor == 0){
             amount = WalletBalance ? Number(WalletBalance.amount - req.query.amount) : Number(0 - req.query.amount)
@@ -83,19 +83,23 @@ exports.updateWalletBalance = async function(req,res){
             amount = WalletBalance ? Number(parseInt(WalletBalance.amount) + parseInt(req.query.amount)) : Number(req.query.amount)
         }
 
-        if(WalletBalance){
-            await Wallet.updateOne({userId:req.query.userId},{amount:amount,updatedAt:new Date()})
-            await WalletHistory({
-                userId: req.query.userId,
-                amount:amount
-            }).save();
-            res.json({sucess:'Balance Updated!'})
+        if(!WalletBalance.consistent){
+            if(WalletBalance){
+                await Wallet.updateOne({userId:req.query.userId},{amount:amount,updatedAt:new Date(),consistent:false})
+                await WalletHistory({
+                    userId: req.query.userId,
+                    amount:amount
+                }).save();
+                res.json({sucess:'Balance Updated!'})
+            }else{
+                await Wallet({
+                    userId:req.query.userId,
+                    amount:amount
+                }).save();
+                res.json({sucess:'Balance Updated!'})
+            }
         }else{
-            await Wallet({
-                userId:req.query.userId,
-                amount:amount
-            }).save();
-            res.json({sucess:'Balance Updated!'})
+            res.json({sucess:'Wallet not consistent!'})
         }
 
     }catch(e){
