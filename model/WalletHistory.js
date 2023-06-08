@@ -11,9 +11,8 @@ const Schema = mongoose.Schema;
 const walletSchma = new Schema({
     userId: {type:Schema.Types.ObjectId,default:null},
     amount: { type: Number,default:null },
-    consistent: {type:Boolean,default:false},
     createdAt: { type: Date, default: new Date() },
-    updatedAt: { type: Date}
+    updatedAt: { type: Date, default: new Date() }
 })
 
-module.exports = mongoose.model("Wallet", walletSchma)
+module.exports = mongoose.model("WalletHistory", walletSchma)

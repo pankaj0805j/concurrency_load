@@ -1,5 +1,6 @@
 const User = require('../model/user')
 const Wallet = require('../model/wallet')
+const WalletHistory = require('../model/WalletHistory')
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Schema.Types.ObjectId;
 
@@ -83,7 +84,11 @@ exports.updateWalletBalance = async function(req,res){
         }
 
         if(WalletBalance){
-            await Wallet.updateOne({userId:req.query.userId},{amount:amount})
+            await Wallet.updateOne({userId:req.query.userId},{amount:amount,updatedAt:new Date()})
+            await WalletHistory({
+                userId: req.query.userId,
+                amount:amount
+            }).save();
             res.json({sucess:'Balance Updated!'})
         }else{
             await Wallet({
